@@ -1,0 +1,14 @@
+{
+  "name": "com.waywyrd.dynamicbuffer-hashset",
+  "version": "1.0.0",
+  "displayName": "DynamicBuffer HashSet",
+  "description": "A simple package to add HashSet functionality to Unity's DynamicBuffer. Forked from https://github.com/Kuptsevych/Unity-DOTS-DynamicBufferHashSet",
+  "unity": "6000.1",
+  "unityRelease": "5f1",
+ "keywords": [
+    "Utilities",
+    "Entities",
+    "Native",
+	"HashSet"
+  ]
+}
