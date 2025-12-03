@@ -2,10 +2,10 @@
 using Unity.Collections;
 using Unity.Entities;
 
-public struct DynamicBufferHashSetHandler<T> where T : struct, IBufferElementData, IEqualityComparer<T>
+public struct DynamicBufferHashSetHandler<T> where T : unmanaged, IBufferElementData, IEqualityComparer<T>
 {
-	[NativeDisableParallelForRestriction] public BufferFromEntity<T>                        ItemsBufferFromEntity;
-	[NativeDisableParallelForRestriction] public BufferFromEntity<BufferHashSetElementData> HashSetBufferFromEntity;
+	[NativeDisableParallelForRestriction] public BufferLookup<T>                        ItemsBufferFromEntity;
+	[NativeDisableParallelForRestriction] public BufferLookup<BufferHashSetElementData> HashSetBufferFromEntity;
 
 	[NativeDisableParallelForRestriction] public DynamicBuffer<T>                        ItemsBuffer;
 	[NativeDisableParallelForRestriction] public DynamicBuffer<BufferHashSetElementData> HashSetBuffer;

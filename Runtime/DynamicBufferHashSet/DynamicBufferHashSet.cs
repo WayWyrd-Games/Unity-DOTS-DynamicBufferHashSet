@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -9,41 +8,41 @@ public struct DynamicBufferHashSet
 {
 	private const int MinBufferCapacity = 32;
 
-	public static DynamicBufferHashSetHandler<T> GetDynamicBufferHashSetHandler<T>(ComponentSystemBase componentSystemBase)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
-		return new DynamicBufferHashSetHandler<T>
-		{
-			ItemsBufferFromEntity   = componentSystemBase.GetBufferFromEntity<T>(),
-			HashSetBufferFromEntity = componentSystemBase.GetBufferFromEntity<BufferHashSetElementData>()
-		};
-	}
+    public static DynamicBufferHashSetHandler<T> GetDynamicBufferHashSetHandler<T>(ComponentSystemBase componentSystemBase)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
+        return new DynamicBufferHashSetHandler<T>
+        {
+            ItemsBufferFromEntity = componentSystemBase.GetBufferLookup<T>(),
+            HashSetBufferFromEntity = componentSystemBase.GetBufferLookup<BufferHashSetElementData>()
+        };
+    }
 
-	public static bool TryAdd<T>(DynamicBufferHashSetHandler<T> handler, T element)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool TryAdd<T>(DynamicBufferHashSetHandler<T> handler, T element)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		if (!CheckHandlerInitialization(handler)) return false;
 		return TryAdd(handler.ItemsBuffer, handler.HashSetBuffer, element);
 	}
 
-	public static bool TryRemove<T>(DynamicBufferHashSetHandler<T> handler, T element)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool TryRemove<T>(DynamicBufferHashSetHandler<T> handler, T element)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		if (!CheckHandlerInitialization(handler)) return false;
 		return TryRemove(handler.ItemsBuffer, handler.HashSetBuffer, element);
 	}
 
-	public static bool Contains<T>(DynamicBufferHashSetHandler<T> handler, T element)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool Contains<T>(DynamicBufferHashSetHandler<T> handler, T element)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		if (!CheckHandlerInitialization(handler)) return false;
 		return Contains(handler.ItemsBuffer, handler.HashSetBuffer, element);
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static bool CheckHandlerInitialization<T>(DynamicBufferHashSetHandler<T> handler)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool CheckHandlerInitialization<T>(DynamicBufferHashSetHandler<T> handler)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		if (!handler.Initialized)
 		{
 #if UNITY_EDITOR
@@ -55,9 +54,9 @@ public struct DynamicBufferHashSet
 		return true;
 	}
 
-	public static DynamicBuffer<T> AddDynamicBufferHashSet<T>(EntityManager entityManager, Entity entity, int capacity)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static DynamicBuffer<T> AddDynamicBufferHashSet<T>(EntityManager entityManager, Entity entity, int capacity)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		var buffer        = entityManager.AddBuffer<T>(entity);
 		var hashMapBuffer = entityManager.AddBuffer<BufferHashSetElementData>(entity);
 
@@ -69,8 +68,8 @@ public struct DynamicBufferHashSet
 		return buffer;
 	}
 
-	public static void Clear<T>(EntityManager entityManager, Entity entity, int capacity) where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static void Clear<T>(EntityManager entityManager, Entity entity, int capacity) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		if (entityManager.HasComponent(entity, typeof(T)))
 		{
 			var buffer = entityManager.GetBuffer<T>(entity);
@@ -87,8 +86,8 @@ public struct DynamicBufferHashSet
 	}
 
 
-	public static bool TryAdd<T>(EntityManager entityManager, Entity entity, T element) where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool TryAdd<T>(EntityManager entityManager, Entity entity, T element) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		var buffer = entityManager.GetBuffer<T>(entity);
 
 		if (buffer.Length >= buffer.Capacity)
@@ -102,9 +101,9 @@ public struct DynamicBufferHashSet
 		return TryAdd(buffer, hashMapBuffer, element);
 	}
 
-	public static bool TryAdd<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool TryAdd<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		if (buffer.Length >= buffer.Capacity)
 		{
 			Debug.Log("Error, buffer is full");
@@ -182,8 +181,8 @@ public struct DynamicBufferHashSet
 		return false;
 	}
 
-	public static bool TryRemove<T>(EntityManager entityManager, Entity entity, T element) where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool TryRemove<T>(EntityManager entityManager, Entity entity, T element) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		DynamicBuffer<T> buffer = entityManager.GetBuffer<T>(entity);
 
 		DynamicBuffer<BufferHashSetElementData> hashMapBuffer = entityManager.GetBuffer<BufferHashSetElementData>(entity);
@@ -197,9 +196,9 @@ public struct DynamicBufferHashSet
 		return true;
 	}
 
-	public static bool TryRemove<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool TryRemove<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		int itemIndex = FindBufferItemIndex(buffer, hashMapBuffer, element);
 
 		if (itemIndex < 0) return false;
@@ -209,10 +208,10 @@ public struct DynamicBufferHashSet
 		return true;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void RemoveItemAt<T>(int index, DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void RemoveItemAt<T>(int index, DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		int lastItemIndex = buffer.Length - 1;
 
 		buffer[index] = buffer[lastItemIndex];
@@ -415,8 +414,8 @@ public struct DynamicBufferHashSet
 		hashMapBuffer.RemoveAt(lastIndex);
 	}
 
-	public static bool Contains<T>(EntityManager entityManager, Entity entity, T element) where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool Contains<T>(EntityManager entityManager, Entity entity, T element) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		DynamicBuffer<T> buffer = entityManager.GetBuffer<T>(entity);
 
 		DynamicBuffer<BufferHashSetElementData> hashMapBuffer = entityManager.GetBuffer<BufferHashSetElementData>(entity);
@@ -424,23 +423,23 @@ public struct DynamicBufferHashSet
 		return Contains(buffer, hashMapBuffer, element);
 	}
 
-	public static int Length<T>(EntityManager entityManager, Entity entity) where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static int Length<T>(EntityManager entityManager, Entity entity) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		DynamicBuffer<T> buffer = entityManager.GetBuffer<T>(entity);
 
 		return buffer.Length;
 	}
 
-	public static bool Contains<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static bool Contains<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		return FindBufferItemIndex(buffer, hashMapBuffer, element) >= 0;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static int FindBufferItemIndex<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
-		where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int FindBufferItemIndex<T>(DynamicBuffer<T> buffer, DynamicBuffer<BufferHashSetElementData> hashMapBuffer, T element)
+        where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		int index = GetIndex(element, buffer.Capacity);
 
 		if (hashMapBuffer[index].Empty) return -1;
@@ -473,17 +472,17 @@ public struct DynamicBufferHashSet
 		return -1;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static int GetIndex<T>(T key, int size) where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int GetIndex<T>(T key, int size) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		int index = key.GetHashCode() % size;
 		return math.abs(index);
 	}
 
 #if UNITY_EDITOR
 
-	public static void TestCorrectness<T>(EntityManager entityManager, Entity entity) where T : struct, IBufferElementData, IEqualityComparer<T>
-	{
+    public static void TestCorrectness<T>(EntityManager entityManager, Entity entity) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
+    {
 		DynamicBuffer<T> buffer = entityManager.GetBuffer<T>(entity);
 
 		DynamicBuffer<BufferHashSetElementData> hashMapBuffer = entityManager.GetBuffer<BufferHashSetElementData>(entity);
