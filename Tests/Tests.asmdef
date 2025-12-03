@@ -1,9 +1,14 @@
 {
     "name": "com.waywyrd.dynamicbuffer-hashset.tests",
-    "rootNamespace": "com.waywyrd.dynamicbuffer-hashset.tests",
+    "rootNamespace": "com.waywyrd.dynamicbuffer_hashset.tests",
     "references": [
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "com.waywyrd.dynamicbuffer-hashset",
+        "Unity.Entities",
+        "Unity.Entities.Tests",
+        "Unity.Entities.Editor.Tests",
+        "Unity.Collections"
     ],
     "includePlatforms": [
         "Editor"

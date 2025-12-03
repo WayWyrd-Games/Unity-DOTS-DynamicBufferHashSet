@@ -8,7 +8,7 @@ namespace com.waywyrd.dynamicbuffer_hashset
 {
     public struct DynamicBufferHashSet
     {
-        private const int MinBufferCapacity = 32;
+        public const int MinBufferCapacity = 32;
 
         public static DynamicBufferHashSetHandler<T> GetDynamicBufferHashSetHandler<T>(ComponentSystemBase componentSystemBase)
             where T : unmanaged, IBufferElementData, IEqualityComparer<T>
@@ -56,7 +56,7 @@ namespace com.waywyrd.dynamicbuffer_hashset
             return true;
         }
 
-        public static DynamicBuffer<T> AddDynamicBufferHashSet<T>(EntityManager entityManager, Entity entity, int capacity)
+        public static DynamicBuffer<T> AddDynamicBufferHashSet<T>(EntityManager entityManager, Entity entity, int capacity = MinBufferCapacity)
             where T : unmanaged, IBufferElementData, IEqualityComparer<T>
         {
             var buffer = entityManager.AddBuffer<T>(entity);
@@ -128,6 +128,14 @@ namespace com.waywyrd.dynamicbuffer_hashset
                 return true;
             }
 
+            if (element.Equals(element, buffer[hashMapBuffer[index].Index]))
+            {
+#if UNITY_EDITOR || DEBUG
+                //Debug.LogError("Already has item, add error::" + index);
+#endif
+                return false;
+            }
+
             var hashIndex = index;
             var nextIndex = hashMapBuffer[hashIndex].NextItem;
             for (var i = 0; i < buffer.Capacity; i++)
@@ -170,13 +178,6 @@ namespace com.waywyrd.dynamicbuffer_hashset
                     return true;
                 }
 
-                if (buffer[hashMapBuffer[nextIndex].Index].Equals(element, buffer[hashMapBuffer[nextIndex].Index]))
-                {
-#if UNITY_EDITOR || DEBUG
-                    Debug.Log("Already has item, add error::" + index);
-#endif
-                    return false;
-                }
 
                 hashIndex = nextIndex;
                 nextIndex = hashMapBuffer[nextIndex].NextItem;
@@ -470,76 +471,5 @@ namespace com.waywyrd.dynamicbuffer_hashset
             var index = key.GetHashCode() % size;
             return math.abs(index);
         }
-
-#if UNITY_EDITOR
-
-        public static void TestCorrectness<T>(EntityManager entityManager, Entity entity) where T : unmanaged, IBufferElementData, IEqualityComparer<T>
-        {
-            var buffer = entityManager.GetBuffer<T>(entity);
-
-            var hashMapBuffer = entityManager.GetBuffer<BufferHashSetElementData>(entity);
-
-            foreach (var bufferHashMapElement in hashMapBuffer)
-                if (bufferHashMapElement.Index >= buffer.Length)
-                    Debug.LogError("HashMap has out of range buffer item");
-
-            for (var i = 0; i < buffer.Length; i++)
-            {
-                var index = GetIndex(buffer[i], buffer.Capacity);
-
-                Debug.Log("i::" + i + "::hash::" + index);
-
-                if (hashMapBuffer[i].HashMapIndex != index)
-                    Debug.Log("Error::" + index + "::" + i);
-            }
-
-            for (var i = 0; i < buffer.Length; i++)
-            {
-                var index = GetIndex(buffer[i], buffer.Capacity);
-
-                // check hash set indexes
-                if (hashMapBuffer[index].Index != i)
-                    if (!IsChainHasIndex(hashMapBuffer, index, i))
-                        Debug.LogError("Buffer item & hashmap index mismatch, hashIndex:" + index + "::itemIndex::" + i);
-
-                if (hashMapBuffer[i].HashMapIndex != index)
-                    Debug.LogError("Incorrect buffer index to hashIndex value");
-            }
-
-            for (var i = 0; i < hashMapBuffer.Length; i++)
-            for (var n = 0; n < hashMapBuffer.Length; n++)
-                if (i != n && hashMapBuffer[i].Index == hashMapBuffer[n].Index && hashMapBuffer[i].Index >= 0)
-                    Debug.LogError("Hash set contain same index in two cells::" + i + "::itemIndex::" + hashMapBuffer[i].Index);
-
-            for (var i = 0; i < hashMapBuffer.Length; i++)
-            {
-                if (hashMapBuffer[i].Empty && hashMapBuffer[i].Index >= 0)
-                    Debug.LogError("Empty item with index");
-
-                if (!hashMapBuffer[i].Empty && hashMapBuffer[i].Index < 0)
-                    Debug.LogError("Not empty item without index, hash set index::" + i + "::item index::" + hashMapBuffer[i].Index);
-
-                if (hashMapBuffer[i].NextItem >= 0 && hashMapBuffer[i].NextItem >= hashMapBuffer.Length)
-                    Debug.LogError("Hash set buffer next item out of range, hash set index::" + i + "::nextItem::" +
-                                   hashMapBuffer[i].NextItem + "::length::" + hashMapBuffer.Length);
-
-                if (hashMapBuffer[i].PrevItem >= 0 && hashMapBuffer[i].PrevItem >= hashMapBuffer.Length)
-                    Debug.LogError("Hash set buffer prev item out of range, hash set index::" + i + "::prevItem::" + hashMapBuffer[i].PrevItem +
-                                   "::length::" + hashMapBuffer.Length);
-            }
-        }
-
-        private static bool IsChainHasIndex(DynamicBuffer<BufferHashSetElementData> hashMapBuffer, int hashIndex, int itemIndex)
-        {
-            for (var i = 0; i < hashMapBuffer.Length; i++)
-            {
-                if (hashIndex < 0) return false;
-                if (hashMapBuffer[hashIndex].Index == itemIndex) return true;
-                hashIndex = hashMapBuffer[hashIndex].NextItem;
-            }
-
-            return false;
-        }
-#endif
     }
 }
